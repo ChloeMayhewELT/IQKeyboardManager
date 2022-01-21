@@ -147,9 +147,9 @@ public extension IQKeyboardManager {
     }
 
     internal func optimizedAdjustPosition() {
-        if !hasPendingAdjustRequest {
-            hasPendingAdjustRequest = true
-            OperationQueue.main.addOperation {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if !self.hasPendingAdjustRequest {
+                self.hasPendingAdjustRequest = true
                 self.adjustPosition()
                 self.hasPendingAdjustRequest = false
             }
