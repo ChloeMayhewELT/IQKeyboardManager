@@ -39,13 +39,25 @@ public extension IQKeyboardManager {
 
     /** Add toolbar if it is required to add on textFields and it's siblings. */
     internal func addToolbarIfRequired() {
+        /**
+         A temporary workaround for a SwiftUI issue introduced in iOS 16.1 where initially the `inputAccessoryView` returns a private API
+         of type `InputAccessoryHost<InputAccessoryBar>`, with a zero frame. On previous versions, `inputAccessoryView` is nil initially.
+         This means that the below guard check fails when checking for an `inputAccessoryView`, resulting in no toolbar being added.
+         */
+        guard let textField = textFieldView else { return }
+        var hasInputAccessoryView = false
+        if let accessoryView = textField.inputAccessoryView {
+            let accessoryViewClassName = NSStringFromClass(type(of: accessoryView.self))
+            let isPrivateAPI = accessoryViewClassName.hasPrefix("_")
+            hasInputAccessoryView = !isPrivateAPI
+        }
 
         //Either there is no inputAccessoryView or if accessoryView is not appropriate for current situation(There is Previous/Next/Done toolbar).
         guard let siblings = responderViews(), !siblings.isEmpty,
-              let textField = textFieldView, textField.responds(to: #selector(setter: UITextField.inputAccessoryView)),
-              (textField.inputAccessoryView == nil ||
-                textField.inputAccessoryView?.tag == IQKeyboardManager.kIQPreviousNextButtonToolbarTag ||
-                textField.inputAccessoryView?.tag == IQKeyboardManager.kIQDoneButtonToolbarTag) else {
+              textField.responds(to: #selector(setter: UITextField.inputAccessoryView)),
+              (!hasInputAccessoryView ||
+               textField.inputAccessoryView?.tag == IQKeyboardManager.kIQPreviousNextButtonToolbarTag ||
+               textField.inputAccessoryView?.tag == IQKeyboardManager.kIQDoneButtonToolbarTag) else {
             return
         }
 
