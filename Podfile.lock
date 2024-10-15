@@ -1,18 +1,38 @@
 PODS:
-  - IQDropDownTextField (1.1.1)
-  - IQKeyboardManager (6.5.8)
-  - IQKeyboardManagerSwift (6.5.8)
-  - SwiftLint (0.40.0)
+  - IQDropDownTextField (4.0.4)
+  - IQDropDownTextFieldSwift (4.0.4)
+  - IQKeyboardCore (1.0.5)
+  - IQKeyboardManager (6.5.19)
+  - IQKeyboardManagerSwift/Appearance (7.2.0):
+    - IQKeyboardManagerSwift/Core
+    - IQKeyboardNotification (= 1.0.3)
+    - IQTextInputViewNotification (= 1.0.5)
+  - IQKeyboardManagerSwift/Core (7.2.0):
+    - IQKeyboardNotification (= 1.0.3)
+    - IQTextInputViewNotification (= 1.0.5)
+  - IQKeyboardNotification (1.0.3)
+  - IQTextInputViewNotification (1.0.5):
+    - IQKeyboardCore (= 1.0.5)
+  - RSKPlaceholderTextView (8.0.0)
+  - SwiftLint (0.56.1)
 
 DEPENDENCIES:
   - IQDropDownTextField
+  - IQDropDownTextFieldSwift
   - IQKeyboardManager (from `.`)
-  - IQKeyboardManagerSwift (from `.`)
+  - IQKeyboardManagerSwift/Appearance (from `.`)
+  - IQKeyboardManagerSwift/Core (from `.`)
+  - RSKPlaceholderTextView
   - SwiftLint
 
 SPEC REPOS:
   trunk:
     - IQDropDownTextField
+    - IQDropDownTextFieldSwift
+    - IQKeyboardCore
+    - IQKeyboardNotification
+    - IQTextInputViewNotification
+    - RSKPlaceholderTextView
     - SwiftLint
 
 EXTERNAL SOURCES:
@@ -22,11 +42,16 @@ EXTERNAL SOURCES:
     :path: "."
 
 SPEC CHECKSUMS:
-  IQDropDownTextField: 3d2e5728a2b83ff5dbb14cb9b497a80005124cbe
-  IQKeyboardManager: 1943526a2fa1a6ea24f90c845c274b0e80dd1912
-  IQKeyboardManagerSwift: 8139150a3c90a915a413d72a8a3e8634c2d3278b
-  SwiftLint: 4154893c73a4c52d6240195507eb7a3e3c64087e
+  IQDropDownTextField: 3cce52d039b32c6cfa44c6a7603e949c1df4c7c3
+  IQDropDownTextFieldSwift: fe6cf39c35dae95335a651e0e08a842a49f08b57
+  IQKeyboardCore: 28c8bf3bcd8ba5aa1570b318cbc4da94b861711e
+  IQKeyboardManager: c8665b3396bd0b79402b4c573eac345a31c7d485
+  IQKeyboardManagerSwift: 12d6ae3632ef744ccd033c048b566af13cc10d49
+  IQKeyboardNotification: d7382c4466c5a5adef92c7452ebf861b36050088
+  IQTextInputViewNotification: 4381fb828881983205fbee38f17da8a9fe2e835c
+  RSKPlaceholderTextView: 85cb165bfbfe160a2e7bfb6bcd77a21100ce1b52
+  SwiftLint: c5fa0b7eece474d43d2178b581a1242a16267347
 
-PODFILE CHECKSUM: dbd75d6b8b35d0cdee14571c29ff90fc1ce4a9ed
+PODFILE CHECKSUM: 24e9c22ba3a188b4cca732852d062112905185ac
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.15.2

@@ -1,64 +1,69 @@
 //
 //  IQTextView.swift
-// https://github.com/hackiftekhar/IQKeyboardManager
-// Copyright (c) 2013-20 Iftekhar Qurashi.
+//  https://github.com/hackiftekhar/IQKeyboardManager
+//  Copyright (c) 2013-24 Iftekhar Qurashi.
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
 
 import UIKit
 
 /** @abstract UITextView with placeholder support   */
 @available(iOSApplicationExtension, unavailable)
-open class IQTextView: UITextView {
+@MainActor
+@objcMembers open class IQTextView: UITextView {
 
-    @objc required public init?(coder aDecoder: NSCoder) {
+    required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.refreshPlaceholder), name: UITextView.textDidChangeNotification, object: self)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.refreshPlaceholder),
+                                               name: UITextView.textDidChangeNotification, object: self)
     }
 
-    @objc override public init(frame: CGRect, textContainer: NSTextContainer?) {
+    override public init(frame: CGRect, textContainer: NSTextContainer?) {
         super.init(frame: frame, textContainer: textContainer)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.refreshPlaceholder), name: UITextView.textDidChangeNotification, object: self)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.refreshPlaceholder),
+                                               name: UITextView.textDidChangeNotification, object: self)
     }
 
-    @objc override open func awakeFromNib() {
+    override open func awakeFromNib() {
         super.awakeFromNib()
-        NotificationCenter.default.addObserver(self, selector: #selector(self.refreshPlaceholder), name: UITextView.textDidChangeNotification, object: self)
-    }
-
-    deinit {
-        IQ_PlaceholderLabel.removeFromSuperview()
+        NotificationCenter.default.addObserver(self, selector: #selector(self.refreshPlaceholder),
+                                               name: UITextView.textDidChangeNotification, object: self)
     }
 
     private var placeholderInsets: UIEdgeInsets {
-        return UIEdgeInsets(top: self.textContainerInset.top, left: self.textContainerInset.left + self.textContainer.lineFragmentPadding, bottom: self.textContainerInset.bottom, right: self.textContainerInset.right + self.textContainer.lineFragmentPadding)
+        let top: CGFloat = self.textContainerInset.top
+        let left: CGFloat = self.textContainerInset.left + self.textContainer.lineFragmentPadding
+        let bottom: CGFloat = self.textContainerInset.bottom
+        let right: CGFloat = self.textContainerInset.right + self.textContainer.lineFragmentPadding
+        return UIEdgeInsets(top: top, left: left, bottom: bottom, right: right)
     }
 
     private var placeholderExpectedFrame: CGRect {
-        let placeholderInsets = self.placeholderInsets
-        let maxWidth = self.frame.width-placeholderInsets.left-placeholderInsets.right
-        let expectedSize = IQ_PlaceholderLabel.sizeThatFits(CGSize(width: maxWidth, height: self.frame.height-placeholderInsets.top-placeholderInsets.bottom))
+        let insets: UIEdgeInsets = self.placeholderInsets
+        let maxWidth: CGFloat = self.frame.width-insets.left-insets.right
+        let size: CGSize = CGSize(width: maxWidth, height: self.frame.height-insets.top-insets.bottom)
+        let expectedSize: CGSize = placeholderLabel.sizeThatFits(size)
 
-        return CGRect(x: placeholderInsets.left, y: placeholderInsets.top, width: maxWidth, height: expectedSize.height)
+        return CGRect(x: insets.left, y: insets.top, width: maxWidth, height: expectedSize.height)
     }
 
-    lazy var IQ_PlaceholderLabel: UILabel = {
+    lazy var placeholderLabel: UILabel = {
         let label = UILabel()
 
         label.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -67,11 +72,8 @@ open class IQTextView: UITextView {
         label.font = self.font
         label.textAlignment = self.textAlignment
         label.backgroundColor = UIColor.clear
-        #if swift(>=5.1)
-        label.textColor = UIColor.systemGray
-        #else
-        label.textColor = UIColor.lightText
-        #endif
+        label.isAccessibilityElement = false
+        label.textColor = UIColor.placeholderText
         label.alpha = 0
         self.addSubview(label)
 
@@ -82,11 +84,11 @@ open class IQTextView: UITextView {
     @IBInspectable open var placeholderTextColor: UIColor? {
 
         get {
-            return IQ_PlaceholderLabel.textColor
+            return placeholderLabel.textColor
         }
 
         set {
-            IQ_PlaceholderLabel.textColor = newValue
+            placeholderLabel.textColor = newValue
         }
     }
 
@@ -94,11 +96,11 @@ open class IQTextView: UITextView {
     @IBInspectable open var placeholder: String? {
 
         get {
-            return IQ_PlaceholderLabel.text
+            return placeholderLabel.text
         }
 
         set {
-            IQ_PlaceholderLabel.text = newValue
+            placeholderLabel.text = newValue
             refreshPlaceholder()
         }
     }
@@ -106,31 +108,28 @@ open class IQTextView: UITextView {
     /** @abstract To set textView's placeholder attributed text. Default is nil.    */
     open var attributedPlaceholder: NSAttributedString? {
         get {
-            return IQ_PlaceholderLabel.attributedText
+            return placeholderLabel.attributedText
         }
 
         set {
-            IQ_PlaceholderLabel.attributedText = newValue
+            placeholderLabel.attributedText = newValue
             refreshPlaceholder()
         }
     }
 
-    @objc override open func layoutSubviews() {
+    override open func layoutSubviews() {
         super.layoutSubviews()
 
-        IQ_PlaceholderLabel.frame = placeholderExpectedFrame
+        placeholderLabel.frame = placeholderExpectedFrame
     }
 
-    @objc internal func refreshPlaceholder() {
+    @objc private func refreshPlaceholder() {
 
-        if !text.isEmpty || !attributedText.string.isEmpty {
-            IQ_PlaceholderLabel.alpha = 0
-        } else {
-            IQ_PlaceholderLabel.alpha = 1
-        }
+        let text: String = text ?? attributedText?.string ?? ""
+        placeholderLabel.alpha = text.isEmpty ? 1 : 0
     }
 
-    @objc override open var text: String! {
+    override open var text: String! {
 
         didSet {
             refreshPlaceholder()
@@ -144,25 +143,25 @@ open class IQTextView: UITextView {
         }
     }
 
-    @objc override open var font: UIFont? {
+    override open var font: UIFont? {
 
         didSet {
 
-            if let unwrappedFont = font {
-                IQ_PlaceholderLabel.font = unwrappedFont
+            if let font: UIFont = font {
+                placeholderLabel.font = font
             } else {
-                IQ_PlaceholderLabel.font = UIFont.systemFont(ofSize: 12)
+                placeholderLabel.font = UIFont.systemFont(ofSize: 12)
             }
         }
     }
 
-    @objc override open var textAlignment: NSTextAlignment {
+    override open var textAlignment: NSTextAlignment {
         didSet {
-            IQ_PlaceholderLabel.textAlignment = textAlignment
+            placeholderLabel.textAlignment = textAlignment
         }
     }
 
-    @objc override weak open var delegate: UITextViewDelegate? {
+    override weak open var delegate: (any UITextViewDelegate)? {
 
         get {
             refreshPlaceholder()
@@ -174,15 +173,36 @@ open class IQTextView: UITextView {
         }
     }
 
-    @objc override open var intrinsicContentSize: CGSize {
+    override open var intrinsicContentSize: CGSize {
         guard !hasText else {
             return super.intrinsicContentSize
         }
 
-        var newSize = super.intrinsicContentSize
-        let placeholderInsets = self.placeholderInsets
+        var newSize: CGSize = super.intrinsicContentSize
+        let placeholderInsets: UIEdgeInsets = self.placeholderInsets
         newSize.height = placeholderExpectedFrame.height + placeholderInsets.top + placeholderInsets.bottom
 
         return newSize
     }
+
+    override open func caretRect(for position: UITextPosition) -> CGRect {
+        var originalRect = super.caretRect(for: position)
+
+        // When placeholder is visible and text alignment is centered
+        guard placeholderLabel.alpha == 1 && self.textAlignment == .center else { return originalRect }
+
+        // Calculate the width of the placeholder text
+        let font = placeholderLabel.font ?? UIFont.systemFont(ofSize: UIFont.systemFontSize)
+        let textSize = placeholderLabel.text?.size(withAttributes: [.font: font]) ?? .zero
+        // Calculate the starting x position of the centered placeholder text
+        let centeredTextX = (self.bounds.size.width - textSize.width) / 2
+        // Update the caret position to match the starting x position of the centered text
+        originalRect.origin.x = centeredTextX
+
+        return originalRect
+    }
 }
+
+@available(iOSApplicationExtension, unavailable)
+@MainActor
+@objc extension IQTextView: IQPlaceholderable { }

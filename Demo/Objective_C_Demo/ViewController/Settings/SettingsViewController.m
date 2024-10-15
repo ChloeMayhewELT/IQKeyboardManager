@@ -1,15 +1,30 @@
 //
 //  SettingsViewController.m
-//  IQKeyboard
+//  https://github.com/hackiftekhar/IQKeyboardManager
+//  Copyright (c) 2013-24 Iftekhar Qurashi.
 //
-//  Created by Iftekhar on 27/09/14.
-//  Copyright (c) 2014 Iftekhar. All rights reserved.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
 
 #import "SettingsViewController.h"
 #import "OptionsViewController.h"
 
-#import "IQKeyboardManager.h"
+#import <IQKeyboardManager/IQKeyboardManager.h>
 
 #import "SwitchTableViewCell.h"
 #import "StepperTableViewCell.h"
@@ -18,7 +33,7 @@
 #import "TextFieldTableViewCell.h"
 #import "ImageSwitchTableViewCell.h"
 
-@interface SettingsViewController ()<OptionsViewControllerDelegate,ColorPickerTextFieldDelegate>
+@interface SettingsViewController ()<OptionsViewControllerDelegate, UITextFieldDelegate, UIColorPickerViewControllerDelegate>
 
 @end
 
@@ -308,9 +323,9 @@
                     ColorTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:NSStringFromClass([ColorTableViewCell class])];
                     cell.labelTitle.text = keyboardManagerProperties[indexPath.section][indexPath.row];
                     cell.labelSubtitle.text = keyboardManagerPropertyDetails[indexPath.section][indexPath.row];
-                    cell.colorPickerTextField.selectedColor = [[IQKeyboardManager sharedManager] toolbarTintColor];
-                    cell.colorPickerTextField.tag = 15;
-                    cell.colorPickerTextField.delegate = self;
+                    cell.selectedColorView.backgroundColor = [[IQKeyboardManager sharedManager] toolbarTintColor];
+                    cell.selectedColorView.layer.borderColor = UIColor.lightGrayColor.CGColor;
+                    cell.selectedColorView.layer.borderWidth = 1.0;
                     return cell;
                 }
                     break;
@@ -435,23 +450,69 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+
+    switch (indexPath.section)
+    {
+        case 1:
+        {
+            switch (indexPath.row)
+            {
+                case 5:
+                {
+                    if (@available(iOS 14.0, *)) {
+                        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+                        UIColorPickerViewController *colorPicker = [[UIColorPickerViewController alloc] init];
+                        
+                        colorPicker.title = @"Toolbar Tint Color";
+                        colorPicker.supportsAlpha = NO;
+                        colorPicker.delegate = self;
+                        colorPicker.modalPresentationStyle = UIModalPresentationPopover;
+                        colorPicker.popoverPresentationController.sourceView = cell;
+                        [self presentViewController:colorPicker animated:YES completion:nil];
+                    }
+                }
+                    break;
+            }
+        }
+            break;
+    }
 }
 
--(void)colorPickerTextField:(ColorPickerTextField*)textField selectedColorAttributes:(NSDictionary*)colorAttributes
-{
-    if (textField.tag == 15)
+-(void)colorPickerViewControllerDidFinish:(UIColorPickerViewController *)viewController
+API_AVAILABLE(ios(14.0)){
+    [viewController dismissViewControllerAnimated:YES completion:nil];
+}
+
+-(void)colorPickerViewController:(UIColorPickerViewController *)viewController didSelectColor:(UIColor *)color continuously:(BOOL)continuously
+API_AVAILABLE(ios(14.0)){
+    [viewController dismissViewControllerAnimated:YES completion:nil];
+
+    if ([color isEqual:[UIColor clearColor]])
     {
-        UIColor *color = colorAttributes[@"color"];
-        
-        if ([color isEqual:[UIColor clearColor]])
-        {
-            [[IQKeyboardManager sharedManager] setToolbarTintColor:nil];
-        }
-        else
-        {
-            [[IQKeyboardManager sharedManager] setToolbarTintColor:colorAttributes[@"color"]];
-        }
+        [[IQKeyboardManager sharedManager] setToolbarTintColor:nil];
     }
+    else
+    {
+        [[IQKeyboardManager sharedManager] setToolbarTintColor: color];
+    }
+    [self.tableView reloadData];
+}
+
+-(void)colorPickerViewControllerDidSelectColor:(UIColorPickerViewController *)viewController
+API_AVAILABLE(ios(14.0)){
+    [viewController dismissViewControllerAnimated:YES completion:nil];
+
+    UIColor *color = viewController.selectedColor;
+
+    if ([color isEqual:[UIColor clearColor]])
+    {
+        [[IQKeyboardManager sharedManager] setToolbarTintColor:nil];
+    }
+    else
+    {
+        [[IQKeyboardManager sharedManager] setToolbarTintColor: color];
+    }
+    [self.tableView reloadData];
 }
 
 -(void)textFieldDidEndEditing:(UITextField *)textField
@@ -477,7 +538,7 @@
         {
             controller.title = NSLocalizedString(@"Toolbar Manage Behaviour",nil);
             controller.options = @[@"IQAutoToolbar By Subviews",@"IQAutoToolbar By Tag",@"IQAutoToolbar By Position"];
-            controller.selectedIndex = [[IQKeyboardManager sharedManager] toolbarManageBehaviour];
+            controller.selectedIndex = [[IQKeyboardManager sharedManager] toolbarManageBehavior];
         }
         else if (selectedIndexPathForOptions.section == 1 && selectedIndexPathForOptions.row == 4)
         {
@@ -507,7 +568,7 @@
 {
     if (selectedIndexPathForOptions.section == 1 && selectedIndexPathForOptions.row == 1)
     {
-        [[IQKeyboardManager sharedManager] setToolbarManageBehaviour:(IQAutoToolbarManageBehaviour)index];
+        [[IQKeyboardManager sharedManager] setToolbarManageBehavior:(IQAutoToolbarManageBehavior)index];
     }
     else if (selectedIndexPathForOptions.section == 1 && selectedIndexPathForOptions.row == 4)
     {
