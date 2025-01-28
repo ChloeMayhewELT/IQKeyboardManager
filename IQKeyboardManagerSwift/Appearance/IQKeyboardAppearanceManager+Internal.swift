@@ -29,6 +29,11 @@ internal extension IQKeyboardAppearanceManager {
 
     func removeTextInputViewObserver() {
         textInputViewObserver.unsubscribe(identifier: "IQKeyboardAppearanceManager")
+        NotificationCenter.default.removeObserver(
+            self,
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
     }
 
     func addTextInputViewObserver() {
@@ -46,5 +51,16 @@ internal extension IQKeyboardAppearanceManager {
                 break
             }
         })
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appWillEnterForeground(notification:)),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
+    }
+
+    @objc
+    func appWillEnterForeground(notification: Notification) {
+        textInputViewObserver?.textInputView?.reloadInputViews()
     }
 }
