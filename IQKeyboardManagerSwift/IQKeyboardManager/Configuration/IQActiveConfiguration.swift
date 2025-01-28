@@ -244,6 +244,15 @@ extension IQActiveConfiguration {
                 self.sendEvent()
             }
         })
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.willEnterForegroundNotification,
+            object: nil,
+            queue: .main
+        ) { [weak textInputViewObserver] _ in
+            DispatchQueue.main.async { [weak textInputViewObserver] in
+                textInputViewObserver?.textInputView?.reloadInputViews()
+            }
+        }
     }
 }
 

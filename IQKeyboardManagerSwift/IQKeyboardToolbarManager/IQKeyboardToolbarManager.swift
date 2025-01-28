@@ -115,6 +115,11 @@ private extension IQKeyboardToolbarManager {
 
     private func removeTextInputViewObserver() {
         textInputViewObserver.unsubscribe(identifier: "IQKeyboardToolbarManager")
+        NotificationCenter.default.removeObserver(
+            self,
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
     }
 
     private func addTextInputViewObserver() {
@@ -132,5 +137,16 @@ private extension IQKeyboardToolbarManager {
                 removeToolbarIfRequired(of: textInputView)
             }
         })
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appWillEnterForeground(notification:)),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
+    }
+
+    @objc
+    private func appWillEnterForeground(notification: Notification) {
+        textInputViewObserver.textInputView?.reloadInputViews()
     }
 }

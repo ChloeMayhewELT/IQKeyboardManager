@@ -60,7 +60,7 @@ internal extension IQKeyboardAppearanceManager {
     }
 
     @objc
-    func appWillEnterForeground(notification: Notification) {
+    private func appWillEnterForeground(notification: Notification) {
         textInputViewObserver.textInputView?.reloadInputViews()
     }
 }

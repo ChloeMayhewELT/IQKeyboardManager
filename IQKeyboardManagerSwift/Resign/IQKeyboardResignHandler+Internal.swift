@@ -30,6 +30,11 @@ internal extension IQKeyboardResignHandler {
 
     func removeTextInputViewObserver() {
         textInputViewObserver.unsubscribe(identifier: "IQKeyboardResignHandler")
+        NotificationCenter.default.removeObserver(
+            self,
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
     }
 
     func addTextInputViewObserver() {
@@ -44,6 +49,17 @@ internal extension IQKeyboardResignHandler {
                 textInputView.window?.removeGestureRecognizer(resignGesture)
             }
         })
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appWillEnterForeground(notification:)),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
+    }
+
+    @objc
+    private func appWillEnterForeground(notification: Notification) {
+        textInputViewObserver.textInputView?.reloadInputViews()
     }
 
     func privateResignOnTouchOutside() -> Bool {
